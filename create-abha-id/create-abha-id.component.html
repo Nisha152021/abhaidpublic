@@ -1,0 +1,586 @@
+<!-- MAIN PANEL -->
+<div id="main" role="main">
+    <!-- MAIN CONTENT -->
+    <div id="content">
+        <div class="row">
+            <div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
+                <h1 class="page-title txt-color-blueDark"><i class="fa fa-desktop fa-fw "></i> {{'Patient'| translate}}
+                </h1>
+            </div>
+            <div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
+                <div class="btn-group pull-right">
+
+                </div>
+            </div>
+        </div>
+        <ng-container>
+            <ng-container>
+                <!-- Widget ID (each widget will need unique ID)-->
+                <div class="jarviswidget jarviswidget-sortable jarviswidget-color-darken" role="widget" style="">
+                    <header role="heading">
+                        <h2>{{'Create ABHA ID of Patient '| translate}}</h2>
+                    </header>
+                    <!-- widget div-->
+                    <div role="content">
+                        <!-- widget content -->
+                        <div class="widget-body no-padding">
+                            <form class="registration" novalidate="" [formGroup]="AddForm">
+                                <div class="col-md-2 zeropadding">
+
+                                </div>
+
+
+                                <div class="col-md-10">
+
+
+                                    <div class="form-group row allmargin">
+                                        <label class="col-sm-3 col-form-label"><strong
+                                                class="pull-right">Choose Option</strong></label>
+
+                                        <div class="col-md-9">
+                                            <div class="btn-group">
+                                                <label class="btn btn-primary active">
+                                                    <input type="radio" name="abhaOption" value="1" checked
+                                                           (change)="changeAbhaOption($event)"> Create ABHA Using Aadhar
+                                                    and
+                                                    Mobile
+                                                </label>
+                                                <label class="btn btn-primary">
+                                                    <input type="radio" name="abhaOption" value="2"
+                                                           (change)="changeAbhaOption($event)"> Fetch Using ABHA ID or
+                                                    ABHA Address
+                                                </label>
+                                                <label class="btn btn-primary">
+                                                    <input type="radio" name="abhaOption" value="3"
+                                                           (change)="changeAbhaOption($event)"> Scan QR-Code Of Patient
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="form-group row allmargin">
+                                        <!--&lt;!&ndash;   </div>-->
+                                        <div class="form-group row" *ngIf="abhaOption==3">
+                                            <label class="col-sm-3 col-form-label"><strong
+                                                    class="pull-right">Scan</strong></label>
+                                            <div class="col-sm-6">
+                                           <textarea type="text"
+                                                     placeholder="Scan QR Code" #key
+                                                     (keyup)="checkIfJsonIsValid(key.value)"
+                                                     [(ngModel)]="qrCode"
+                                                     [ngModelOptions]="{standalone: true}"
+                                                     name="qrCode" class="form-control"
+                                                     (keyup)="checkIfJsonIsValid(key.value)"
+                                                     [readonly]="isQRreadonly"
+                                           >{{qrCode}}</textarea>
+
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <button type="button" class="btn btn-success" [disabled]="!validJson"
+                                                        (click)="onGetAbhaDetails()">
+                                                    {{'Register Patient'| translate}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <label class="col-sm-3 col-form-label" *ngIf="abhaOption==1"><strong
+                                                class="pull-right">Aadhar
+                                            Number  <span class="invalid">*</span></strong></label>
+                                        <div class="col-sm-6" *ngIf="abhaOption==1">
+                                            <input class="form-control"
+                                                   placeholder="Aadhar Number" [(ngModel)]="aadharNumber"
+                                                   [ngModelOptions]="{standalone: true}" maxlength="12" onkeypress="return event.charCode >= 48 && event.charCode <= 57"/>
+                                        </div>
+                                        <div class="col-md-3" *ngIf="abhaOption==1">
+                                            Consent <input type="checkbox" name="consentCheckBox"
+                                                           (click)="showConsentDialog($event)"
+                                                           [checked]="patientAbhaConsentGiven"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row allmargin" *ngIf="abhaOption==1">
+                                        <label class="col-sm-3 col-form-label"><strong
+                                                class="pull-right">Mobile  <span class="invalid">*</span></strong></label>
+                                        <div class="col-sm-3">
+                                            <input class="form-control"
+                                                   [(ngModel)]="mobileNumber" [ngModelOptions]="{standalone: true}"
+                                                   name="userMobile" type="text" placeholder="Mobile No." maxlength="10" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row allmargin" *ngIf="abhaOption==1">
+                                        <label class="col-sm-3 col-form-label"><strong
+                                                class="pull-right">ABHA Address <span class="invalid">*</span></strong></label>
+                                        <div class="col-sm-3">
+                                            <input class="form-control"
+                                                   [formControl]="AddForm.get('patientUserId.userHealthId')"
+                                                   name="userHealthId" type="text" placeholder="ABHA Address" maxlength="250">
+                                        </div>
+                                        <div class="col-sm-3" *ngIf="abhaOption==1">
+                                            <button type="button" class="btn btn-success"
+                                                    [disabled]="!patientAbhaConsentGiven"
+                                                    (click)="createPatientAbhaId()">
+                                                {{'Create ABHA ID'| translate}}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row allmargin" *ngIf="abhaOption==2">
+                                        <label class="col-sm-3 col-form-label"><strong class="pull-right">ABHA
+                                            Address</strong></label>
+                                        <div class="col-sm-6">
+                                            <input type="text" name="healthId" [(ngModel)]="healthId" maxlength="250"
+                                                   [ngModelOptions]="{standalone: true}" autocomplete="off"
+                                                   (focus)="sethealthIdNumberToNull()"
+                                                   class="form-control" (keyup)="validateButtons()"/>
+                                        </div>
+                                        <div class="col-sm-3 col-form-label">
+                                            <button type="button" class="btn btn-success"
+                                                    [disabled]="!isAbhaAddressNull"
+                                                    (click)="fetchAbhaDetailsByAbhaAddress()">
+                                                {{'Fetch ABHA Details'| translate}}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row allmargin" *ngIf="abhaOption==2">
+                                        <label class="col-sm-3 col-form-label"><strong class="pull-right"> ABHA
+                                            ID</strong></label>
+                                        <div class="col-sm-6">
+                                            <input type="text" name="aadharNumber" [(ngModel)]="healthIdNumber" maxlength="17"
+                                                   [ngModelOptions]="{standalone: true}" autocomplete="off"
+                                                   (focus)="sethealthIdToNull()"
+                                                   class="form-control" (keyup)="validateButtons()"/>
+                                        </div>
+                                        <div class="col-sm-3 col-form-label">
+                                            <button type="button" class="btn btn-success" [disabled]="!isAbhaIdNull"
+                                                    (click)="fetchAbhaDetailsByAbhaId()">
+                                                {{'Fetch ABHA Details'| translate}}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row allmargin">
+                                        <label class="col-sm-3 col-form-label"><strong
+                                                class="pull-right">Name</strong></label>
+
+                                        <div class="col-md-3">
+                                            <input class="form-control ng-untouched ng-pristine ng-invalid" readonly
+                                                   style="text-transform: capitalize;"
+                                                   [formControl]="AddForm.get('patientUserId.userFirstname')"
+                                                   name="" type="text" placeholder="First Name" onkeypress="return (event.charCode > 64 &&
+	                                          event.charCode < 91) || (event.charCode == 32) || (event.charCode > 96 && event.charCode < 123)">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input class="form-control ng-untouched ng-pristine ng-invalid" readonly
+                                                   style="text-transform: capitalize;"
+                                                   [formControl]="AddForm.get('patientUserId.userMiddlename')"
+                                                   name="" type="text" placeholder="Middle Name" onkeypress="return (event.charCode > 64 &&
+	                                          event.charCode < 91) || (event.charCode == 32) || (event.charCode > 96 && event.charCode < 123)">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input class="form-control ng-untouched ng-pristine ng-invalid" readonly
+                                                   style="text-transform: capitalize;"
+                                                   [formControl]="AddForm.get('patientUserId.userLastname')"
+                                                   name="" type="text" placeholder="Last Name" onkeypress="return (event.charCode > 64 &&
+	                                          event.charCode < 91) || (event.charCode == 32) || (event.charCode > 96 && event.charCode < 123)">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row allmargin">
+                                        <div class="col-sm-3"></div>
+
+                                    </div>
+                                    <style>
+                                        .on, .off {
+                                            left: 0px !important;
+                                        }
+                                    </style>
+                                    <div class="form-group row allmargin">
+                                        <label class="col-sm-3 col-form-label"><strong
+                                                class="pull-right">DOB</strong></label>
+                                        <div class="col-sm-2 dateRangePickerReg" id="datepicker_id">
+                                            <input type="text" readonly
+                                                   class="form-control ng-untouched ng-pristine ng-invalid"
+                                                   [formControl]="AddForm.get('patientUserId.userDob')"/>
+                                        </div>
+                                        <label class="col-sm-1 col-form-label"><strong
+                                                class="pull-right">Gender</strong></label>
+                                        <div class="col-sm-2">
+                                            <input type="text" readonly [formControl]="AddForm.get('patientUserId.userGender')" class="form-control ng-untouched ng-pristine ng-invalid"/>
+                                            <select class="form-control ng-untouched ng-pristine ng-invalid hidden"
+                                                    name="gender"
+                                                    readonly
+                                                    [formControl]="AddForm.get('patientUserId.userGenderId.genderId')">
+                                                <option value="">- Select Gender -</option>
+                                                <option *ngFor="let mstgender of mstgenderlist"
+                                                        [value]=mstgender.genderId>
+                                                    {{mstgender.genderName}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row allmargin">
+                                        <label class="col-sm-3 col-form-label"><strong class="pull-right">{{'Address'|
+                                            translate}}</strong></label>
+                                        <div class="col-md-9">
+                                    <textarea class="form-control ng-untouched ng-pristine ng-invalid" readonly
+                                              style="text-transform: capitalize;"
+                                              [formControl]="AddForm.get('patientUserId.userAddress')"
+                                              name="">
+                                    </textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row allmargin">
+                                        <span class="col-sm-3 col-form-label"></span>
+                                        <div class="col-sm-3 center"><span><strong>Patient District</strong></span>
+                                        </div>
+                                        <div class="col-sm-3 center"><span><strong>Patient State</strong></span></div>
+                                    </div>
+                                    <div class="form-group row allmargin">
+                                        <span class="col-sm-3 col-form-label"></span>
+                                        <div class="col-sm-3">
+                                            <input class="form-control ng-untouched ng-pristine ng-invalid" readonly
+                                                   [formControl]="AddForm.get('patientUserId.userDistrictName')">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input class="form-control ng-untouched ng-pristine ng-invalid" readonly
+                                                   [formControl]="AddForm.get('patientUserId.userStateName')">
+                                        </div>
+
+                                    </div>
+                                    <div class="form-group row allmargin">
+                                        <span class="col-sm-3 col-form-label"></span>
+                                        <div class="col-sm-3 center">
+                                            <button class="btn btn-primary" type="button" (click)="getCard()"
+                                                    [disabled]="!activateDownload">Download
+                                                PDF Card
+                                            </button>
+                                        </div>
+                                        <div class="col-sm-3 center">
+                                            <button class="btn btn-primary" type="button" (click)="getPngCard()"
+                                                    [disabled]="!activateDownload">
+                                                Download PNG Card
+                                            </button>
+                                        </div>
+                                        <!--<div class="col-sm-3 center">-->
+                                        <!--<button class="btn btn-primary" type="button" (click)="getSvgCard()">-->
+                                        <!--Download SVG Card-->
+                                        <!--</button>-->
+                                        <!--</div>-->
+                                    </div>
+                                </div>
+                                <div class="form-group row allmargin">
+                                    <div class="col-md-3" style="margin-top: 10px">
+
+                                    </div>
+                                    <div class="col-md-3" style="margin-top: 10px">
+                                        <a class="btn btn-success" [routerLink]="['/abha-module/abha-patient-list']"
+                                           style="width: 50%;float: right">
+                                            {{'Next'| translate}}
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- end widget content -->
+                    </div>
+                    <!-- end widget div -->
+                </div>
+                <!-- end widget -->
+            </ng-container>
+
+        </ng-container>
+
+    </div>
+    <!-- END MAIN CONTENT -->
+</div>
+<!-- END MAIN PANEL -->
+<p-dialog styleClass="" [(visible)]="aadharOtpModel" [responsive]="true"
+          showEffect="fade"
+          [modal]="true">
+
+    <p-panel>
+        <p-header>
+            <h4>Verify Aadhar OTP</h4>
+        </p-header>
+        <div class="row">
+            <section class="col-sm-12">
+                <div>
+                    <input type="text" class="form-control" [(ngModel)]="aadharVerificationOTP"
+                           [ngModelOptions]="{standalone: true}"/>
+                </div>
+            </section>
+            <section class="col-sm-12  text-align-center" style="margin-top: 10px;">
+                <button class="btn btn-primary" (click)="resendAadharOTP()">Resent OTP</button>
+            </section>
+            <section class="col-sm-12 text-align-center" style="margin-top: 10px;">
+                <button class="btn btn-primary" (click)="verifyAadharOtpForAbhaRegistration()">Verify</button>
+            </section>
+        </div>
+    </p-panel>
+
+</p-dialog>
+
+<p-dialog styleClass="" [(visible)]="mobileOtpModel" [responsive]="true" showEffect="fade" [modal]="true">
+    <p-panel>
+        <p-header>
+            <h4>Verify Mobile OTP</h4>
+        </p-header>
+        <div class="row">
+            <section class="col-sm-12">
+                <div>
+                    <input type="text" class="form-control" [(ngModel)]="mobileVerificationOTP"
+                           [ngModelOptions]="{standalone: true}"/>
+                </div>
+            </section>
+            <section class="col-sm-12 text-align-center" style="margin-top: 10px;">
+                <button class="btn btn-primary" (click)="verifyMobileOtpForAbhaRegistration()">Verify</button>
+            </section>
+        </div>
+    </p-panel>
+
+</p-dialog>
+
+<p-dialog styleClass="" [(visible)]="fetchAbhaOtpModel" [responsive]="true"
+          showEffect="fade"
+          [modal]="true">
+
+    <p-panel>
+        <p-header>
+            <h4>Verify Mobile OTP</h4>
+        </p-header>
+        <div class="row">
+            <section class="col-sm-12">
+                <div>
+                    <input type="text" class="form-control" [(ngModel)]="fetchAbhaOtp"
+                           [ngModelOptions]="{standalone: true}"/>
+                </div>
+            </section>
+            <section class="col-sm-12 text-align-center" style="margin-top: 10px;">
+                <button class="btn btn-primary" (click)="verifyfetchAbhaOtp()">Verify</button>
+            </section>
+        </div>
+    </p-panel>
+
+</p-dialog>
+
+
+<p-dialog styleClass="" [(visible)]="showConsent" [responsive]="true" [width]="980"
+          showEffect="fade"
+          [modal]="true">
+
+    <p-panel>
+        <p-header>
+            <h4>Consent</h4>
+        </p-header>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-8">
+                    <h1 style="font-size: 28px;">Creating a nudge: Making ABDM implementation easier - Consent
+                        Language</h1>
+                </div>
+                <div class="col-md-4">
+                    <img src="assets/nha.png"/>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <!--<hr style="1px solid">-->
+        <div class="row">
+            <div class="col-md-12">
+                <label>I hereby declare that:</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-1">
+                    <input type="checkbox" [checked]="isChecked" (click)="onClick($event)">
+                </div>
+                <div class="col-md-11">
+                    <p>I am voluntarily sharing my Aadhaar Number / Virtual ID issued by the Unique Identification
+                        Authority of
+                        India (“UIDAI”), and my demographic information for the purpose of creating an Ayushman Bharat
+                        Health Account
+                        number (“ABHA number”) and Ayushman Bharat Health Account address (“ABHA Address”). I authorize
+                        NHA to use my
+                        Aadhaar number / Virtual ID for performing Aadhaar based authentication with UIDAI as per the
+                        provisions of
+                        the Aadhaar (Targeted Delivery of Financial and other Subsidies, Benefits and Services) Act,
+                        2016 for the
+                        aforesaid purpose. I understand that UIDAI will share my e-KYC details, or response of “Yes”
+                        with NHA upon
+                        successful authentication.</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-1">
+                    <input type="checkbox" [checked]="isChecked" (click)="onClick($event)">
+
+                </div>
+                <div class="col-md-11">
+                    <p>I intend to create Ayushman Bharat Health Account Number (“ABHA number”) and Ayushman Bharat
+                        Health Account
+                        address (“ABHA Address”) using document other than Aadhaar. (Click here to proceed further)</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-1">
+                    <input type="checkbox" [checked]="isChecked" (click)="onClick($event)">
+                </div>
+                <div class="col-md-11">
+                    <p>I consent to usage of my ABHA address and ABHA number for linking of my legacy (past) government
+                        health
+                        records and those which will be generated during this encounter.</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-1">
+                    <input type="checkbox" [checked]="isChecked" (click)="onClick($event)">
+                </div>
+                <div class="col-md-11">
+                    <p>I authorize the sharing of all my health records with healthcare provider(s) for the purpose of
+                        providing healthcare services to me during this encounter.</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-1">
+                    <input type="checkbox" [checked]="isChecked" (click)="onClick($event)">
+                </div>
+                <div class="col-md-11">
+                    <p>I consent to the anonymization and subsequent use of my government health records for public
+                        health
+                        purposes.</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-1" style="padding-left: 60px">
+                    <input type="checkbox" [checked]="isChecked" (click)="onClick($event)">
+                </div>
+                <div class="col-md-11" style="padding-left: 50px">
+                    <p>I, {{currentUser.staffUserId.userFullname}},
+                        confirm that I have duly informed and explained the beneficiary of the contents of consent for
+                        aforementioned purposes.</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-1" style="padding-left: 60px">
+                    <input type="checkbox" [checked]="isChecked" (click)="onClick($event)">
+                </div>
+                <div class="col-md-11" style="padding-left: 50px">
+                    <p>I, <input name="patientName" [(ngModel)]="patientName"/>, have been explained about the consent
+                        as stated above and hereby
+                        provide my consent for the aforementioned purposes.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row" style="padding-top: 10px">
+            <div class="col-md-12">
+                <div class="col-md-1">
+                    <strong>Note:</strong>
+                </div>
+                <div class="col-md-11">
+
+                    <p>1. Hospitals/facilities are advised to use double screens. One screen should face
+                        patients/relatives so that they can see the consent language.</p>
+                    <p>2. Hospitals/facilities are advised to use local language for the aforementioned consent.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <p-footer>
+            <button type="button" class="btn btn-primary" (click)="patientHasGivenHisConsent()">I Give My Consent
+            </button>
+        </p-footer>
+
+    </p-panel>
+
+</p-dialog>
+
+
+<p-dialog [(visible)]="showOldPatient" [modal]="true" [width]="1000" closable="true"
+          closeOnEscape="true" (onHide)="onclose()">
+    <p-header>
+        {{'Patient List'| translate}}
+    </p-header>
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+        <tr>
+            <th><span class=""><strong>{{'Patient Name'| translate}}</strong></span></th>
+            <th><span class=""><strong>{{'MR No.'| translate}}</strong></span></th>
+            <th><span class=""><strong>{{'DOB'| translate}}</strong></span></th>
+            <th><span class=""><strong>{{'Gender'| translate}}</strong></span></th>
+            <th><span class=""><strong>{{'Mobile No'| translate}}</strong></span></th>
+            <th><span class=""><strong>{{'Citizen Id'| translate}}</strong></span></th>
+            <th><span class=""><strong>{{'Email Id'| translate}}</strong></span></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let patient of oldPatientList"
+            (click)="selectPatient(patient)">
+            <td> {{patient?.patientUserId.userTitleId?.titleName}}
+                {{patient?.patientUserId.userFirstname}}
+                {{patient?.patientUserId.userMiddlename}}
+                {{patient?.patientUserId.userLastname}}
+            </td>
+            <td>{{patient?.patientMrNo}}</td>
+            <td>{{patient?.patientUserId.userDob}}</td>
+            <td> {{patient?.patientUserId.userGenderId.genderName}}</td>
+            <td> {{patient?.patientUserId.userMobile}}</td>
+            <td> {{patient?.patientUserId.userUid}}</td>
+            <td> {{patient?.patientUserId.userEmail}}</td>
+        </tr>
+        </tbody>
+    </table>
+</p-dialog>
+
+<p-dialog styleClass="" [(visible)]="showAbhaExistsOfPatient" [responsive]="true"
+          showEffect="fade"
+          [modal]="true">
+
+    <p-panel>
+        <p-header>
+            <h4>Patient ABHA ID Exists</h4>
+        </p-header>
+        <div class="row">
+            <section class="col-sm-12" *ngIf="healthIdNumber != null">
+                <p>{{healthIdNumber}}</p>
+            </section>
+            <section class="col-sm-12" *ngIf="numberOfLinkedAccounts != null">
+                <p>Patient has {{numberOfLinkedAccounts}} number of accounts linked with </p>
+            </section>
+            <section class="col-sm-12 text-align-center" style="margin-top: 10px;" *ngIf="healthIdNumber != null">
+                <button class="btn btn-primary" (click)="checkNabhAbdmId()">Fetch Details</button>
+            </section>
+        </div>
+    </p-panel>
+
+</p-dialog>
+<p-dialog styleClass="" [(visible)]="showPatientAlreadyHasAbhaIdAndHeIsRegisteredWithUs" [responsive]="true"
+          showEffect="fade"
+          [modal]="true">
+    <p-panel>
+        <p-header>
+            <h4>Patient ABHA ID Exists</h4>
+        </p-header>
+        <div class="row">
+            <section class="col-sm-12">
+                <p>Patient Is Already has ABHI ID created and Patient is Registered with Us.</p>
+            </section>
+
+        </div>
+    </p-panel>
+
+</p-dialog>
